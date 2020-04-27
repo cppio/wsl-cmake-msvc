@@ -1,2 +1,2 @@
-#!/bin/sh
-arch=x64 exec "$(dirname "$0")/../common/rc" "$@"
+#!/usr/bin/env bash
+. "${0%/*}/../common/common.bash"

@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-. "$(dirname "$0")/common.bash"
-
 manifest="$(<"$3")"
 path="${manifest%\"*}"
 path="${path#*\"}"

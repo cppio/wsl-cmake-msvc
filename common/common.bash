@@ -1,10 +1,25 @@
 set -e
+shopt -s nullglob
 
-. "$(dirname "${BASH_SOURCE[0]}")/../config.sh"
+arch="${0%/*}"
+. "$arch/../config.sh"
+common="$arch/../common"
+arch="${arch##*/}"
+exe="${0##*/}"
+
+args=("$@")
+
+execute () {
+    [[ -x $1 ]] || chmod +x "$1"
+    exec "$1" "${args[@]}"
+}
+
+exec_in () {
+    execute "$1/$arch/$exe.exe"
+}
 
 latest () {
-    local paths=("$1"*) IFS=$'\n'
-    echo "${paths[*]}" | sort -V | tail -n1
+    printf '%s\0' "$1"* | sort -rVz | { read -d '' path; echo $path; }
 }
 
 msvc_real="$(latest "$(wslpath "$msvc")/")"
@@ -22,20 +37,27 @@ kits_lib="$(wslpath -m "$kits_lib_real")"
 kits_net_real="$(latest "$(wslpath "$kits")/NETFXSDK/")"
 kits_net="$(wslpath -m "$kits_net_real")"
 
-export INCLUDE="$msvc/include;$kits_net/include/um;$kits_include/ucrt;$kits_include/shared;$kits_include/um;$kits_include/winrt;$kits_include/cppwinrt"
-export LIB="$msvc/lib/$arch;$kits_net/lib/um/$arch;$kits_lib/ucrt/$arch;$kits_lib/um/$arch"
+include=(
+    "$msvc/include"
+    "$kits_net/include/um"
+    "$kits_include/ucrt"
+    "$kits_include/shared"
+    "$kits_include/um"
+    "$kits_include/winrt"
+    "$kits_include/cppwinrt"
+)
+
+lib=(
+    "$msvc/lib"
+    "$kits_net/lib/um"
+    "$kits_lib/ucrt"
+    "$kits_lib/um"
+)
+
+export INCLUDE="$(printf '%s;' "${include[@]}")"
+export LIB="$(printf "%s/$arch;" "${lib[@]}")"
+
 WSLENV=INCLUDE:LIB
-
-args=("$@")
-
-execute () {
-    [[ -x "$1" ]] || chmod +x "$1"
-    exec "$1" "${args[@]}"
-}
-
-exec_in () {
-    execute "$1/$arch/$(basename "$0").exe"
-}
 
 exec_msvc () {
     exec_in "$msvc_real/bin/Hostx64"
@@ -44,3 +66,5 @@ exec_msvc () {
 exec_kits () {
     exec_in "$kits_bin_real"
 }
+
+. "$common/$exe.bash"
