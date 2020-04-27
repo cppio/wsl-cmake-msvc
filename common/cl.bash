@@ -1,12 +1,20 @@
 args=()
 
 for arg; do
-    args+=("$arg")
-    shift
-
-    case "$arg" in -c|-E|/c)
-        break
+    case "$arg" in
+        -c|-E|/c)
+            args+=("$1")
+            shift
+            break
+            ;;
+        -I/*)
+            args+=("-I$(wslpath -m "${arg#-I}")")
+            ;;
+        *)
+            args+=("$arg")
     esac
+
+    shift
 done
 
 for arg; do
