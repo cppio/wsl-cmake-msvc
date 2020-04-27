@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+. "$(dirname "$0")/common.bash"
+
+args=()
+
+for arg; do
+    case "$arg" in
+        *:/*)
+            args+=("${arg%%:*}:$(wslpath -m "${arg#*:}")")
+            ;;
+        *)
+            args+=("$arg")
+    esac
+done
+
+exec_msvc

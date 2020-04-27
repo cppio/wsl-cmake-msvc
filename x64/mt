@@ -1,0 +1,2 @@
+#!/bin/sh
+arch=x64 exec "$(dirname "$0")/../common/mt" "$@"
